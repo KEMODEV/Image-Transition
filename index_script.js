@@ -2,7 +2,7 @@
 // By default is false to stop transitions when the page first loads
 let vpStatus = false;
 let intervalId;
-let pauseImageIndex = null;
+let firstInterval = true;
 
 // Selects all <a> elements with the class '.image-area'
 const image_boxes = document.querySelectorAll('.image-area');
@@ -10,11 +10,10 @@ const image_boxes = document.querySelectorAll('.image-area');
 // Loops through each '.image-area' element
 image_boxes.forEach(image_box => {
     // Select all elements with the class '.image-class' within the current '.image-area'
-    let images = image_box.querySelectorAll(".image-class");
+    let images = image_box.querySelectorAll('.image-class');
     let cur = 0;
     let prevCur = cur; // Stores the previous image index
     let transitioning = false; // Tracks if a transition is ongoing
-    //let pausedImage;
 
     // Add 'mouseover' event listener to the current '.image-area' element
     image_box.addEventListener('mouseover', function () {
@@ -25,29 +24,21 @@ image_boxes.forEach(image_box => {
         */
         if (!vpStatus && !transitioning) {
             vpStatus = true;
-            startImageTransition(images, cur, prevCur);
-            /*
-            // If the current image is not the first image (cur != 0)
-            if (images[cur] != 0) {
-                pausedImage = images[cur]; // Store the current image as the paused image
-                startImageTransition(images, pausedImage, prevCur); // Start transition from paused image
-            }
-            else {
-                startImageTransition(images, cur, prevCur); // Start transition normally
-            }
-            */
+            //firstInterval = true;
+            startImageTransition(images, cur, prevCur); // Start transition normally
         }
     });
 
     // Adds 'mouseout' event listener to the current '.image-area' element
     image_box.addEventListener('mouseout', function () {
         /* 
-            Same as previous in 'mouseover' but stops the tranitioning 
+            Same as previous in 'mouseover' but stops the transition
             when the mouse is not over the area anymore
         */
         if (vpStatus) {
             vpStatus = false;
-            clearInterval(intervalId); // Clear the interval to stop transitions
+            clearInterval(intervalId);
+            resetImageTransition(images, cur);
         }
     });
 
@@ -57,21 +48,22 @@ image_boxes.forEach(image_box => {
 
 // Starts the image transition when called
 function startImageTransition(images, cur, prevCur) {
-    if (cur != 0) {
-        pauseImageIndex = cur;
-    }
     clearInterval(intervalId); // Clears any existing interval
 
     // If viewport status is true, set up the interval
     if (vpStatus) {
-        if (pauseImageIndex !== null) {
-            intervalId = setInterval(changeImage, 2500, images, pauseImageIndex, prevCur);
-            pauseImageIndex = null;
+        if (firstInterval) {
+            intervalId = setInterval(changeImage, 1250, images, cur, prevCur);
+            firstInterval = false;
+            console.log(`firstIntervale works: ${firstInterval}`);
         }
         else {
             intervalId = setInterval(changeImage, 2500, images, cur, prevCur);
         }
     }
+    /*if (vpStatus) {
+        intervalId = setInterval(changeImage, 2500, images, cur, prevCur);
+    }*/
 }
 
 // Changes the current image when called
@@ -87,4 +79,21 @@ async function changeImage(images, cur, prevCur) {
 
     // Update the cur and prevCur indices to continue the transition
     startImageTransition(images, cur, prevCur);
+}
+
+
+function resetImageTransition(images) {
+    clearInterval(intervalId);
+
+    images.forEach(image => {
+        image.style.opacity = 0;
+    });
+
+    cur = 0;
+    images[cur].style.opacity = 1;
+
+    // Start the transition again if viewport status is true
+    if (vpStatus) {
+        startImageTransition(images, cur, cur); // Start transition from the first image
+    }
 }
