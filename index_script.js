@@ -45,7 +45,7 @@ function startImageTransition(images, cur, prevCur) {
             firstInterval = false;
         }
         else {
-            intervalId = setInterval(changeImage, 2500, images, cur, prevCur);
+            intervalId = setInterval(changeImage, 2250, images, cur, prevCur);
         }
     }
 }
